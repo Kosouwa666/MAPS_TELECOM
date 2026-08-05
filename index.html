@@ -30,6 +30,8 @@
         background: white;
         z-index: 10;
         font-size: 16px;
+        max-height: 250px;
+        overflow-y: auto;
     }
     #suggestions div {
         padding: 8px;
@@ -52,7 +54,7 @@
 
 <div class="search-container">
     <div style="position:relative;">
-        <input type="text" id="search" placeholder="Ex : 050BNO">
+        <input type="text" id="search" placeholder="Ex : 050BNO ou Nautile">
         <div id="suggestions"></div>
     </div>
 
@@ -70,23 +72,39 @@ document.getElementById("search").addEventListener("keydown", function(e) {
     }
 });
 
+let cachedData = null;
+
 // Lecture du CSV (robuste)
+// Format attendu : code;lat;lng  (le nom du site peut être inclus directement dans "code")
 async function loadCSV() {
+    if (cachedData) return cachedData;
+
     const response = await fetch('sites.csv');
     const text = await response.text();
 
-    return text
+    cachedData = text
         .split('\n')
         .map(r => r.trim())
         .filter(r => r.length > 0)
         .slice(1)
         .map(row => {
             const parts = row.split(';').map(x => x.trim());
-            return { code: parts[0], lat: parts[1], lng: parts[2] };
+            const code = parts[0] || '';
+            const lat = parts[1] || '';
+            const lng = parts[2] || '';
+            return {
+                code,
+                lat,
+                lng,
+                // Version en majuscules du code, utilisée pour une recherche insensible à la casse
+                searchText: code.toUpperCase()
+            };
         });
+
+    return cachedData;
 }
 
-// AUTO-COMPLÉTION (recherche partielle)
+// AUTO-COMPLÉTION (recherche partielle, insensible à la casse)
 document.getElementById("search").addEventListener("input", async function() {
     const query = this.value.trim().toUpperCase();
     const suggestionsBox = document.getElementById("suggestions");
@@ -97,76 +115,4 @@ document.getElementById("search").addEventListener("input", async function() {
     }
 
     const data = await loadCSV();
-    const matches = data.filter(item => item.code.includes(query));
-
-    if (matches.length === 0) {
-        suggestionsBox.style.display = "none";
-        return;
-    }
-
-    suggestionsBox.innerHTML = matches
-        .map(item => `<div onclick="selectSuggestion('${item.code}')">${item.code}</div>`)
-        .join("");
-
-    suggestionsBox.style.display = "block";
-});
-
-// Sélection d’une suggestion
-function selectSuggestion(code) {
-    document.getElementById("search").value = code;
-    document.getElementById("suggestions").style.display = "none";
-    searchSite();
-}
-
-// RECHERCHE (partielle + exacte)
-async function searchSite() {
-    const query = document.getElementById('search').value.trim().toUpperCase();
-    const data = await loadCSV();
-
-    // 1) Recherche exacte
-    const exact = data.find(item => item.code === query);
-
-    if (exact) {
-        openMaps(exact);
-        return;
-    }
-
-    // 2) Recherche partielle
-    const matches = data.filter(item => item.code.includes(query));
-
-    if (matches.length === 0) {
-        document.getElementById("result").innerHTML = "<p>Aucun site trouvé.</p>";
-        return;
-    }
-
-    // Affichage liste des résultats
-    document.getElementById("result").innerHTML =
-        "<p>Résultats :</p>" +
-        matches.map(item =>
-            `<div style="margin:8px 0;">
-                <a href="#" onclick="openMaps({lat:'${item.lat}',lng:'${item.lng}'})">
-                    ${item.code}
-                </a>
-            </div>`
-        ).join("");
-}
-
-// Ouvre Maps/Waze
-function openMaps(item) {
-    const mapsUrl = `https://www.google.com/maps?q=${item.lat},${item.lng}`;
-    const wazeUrl = `https://waze.com/ul?ll=${item.lat},${item.lng}&navigate=yes`;
-
-    document.getElementById("result").innerHTML = `
-        <p>Choisir l'application :</p>
-        <a href="${mapsUrl}" target="_blank" style="background:#4285F4;color:white;">
-            Google Maps
-        </a>
-        <a href="${wazeUrl}" target="_blank" style="background:#1C9CEA;color:white;">
-            Waze
-        </a>
-    `;
-}
-</script>
-
-</body>
-</html>
+    const matches = data.filter(item =>
