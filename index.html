@@ -115,4 +115,84 @@ document.getElementById("search").addEventListener("input", async function() {
     }
 
     const data = await loadCSV();
-    const matches = data.filter(item =>
+    const matches = data.filter(item => item.searchText.includes(query));
+
+    if (matches.length === 0) {
+        suggestionsBox.style.display = "none";
+        return;
+    }
+
+    suggestionsBox.innerHTML = matches
+        .map(item => `<div onclick="selectSuggestion('${item.code}')">${item.code}</div>`)
+        .join("");
+
+    suggestionsBox.style.display = "block";
+});
+
+// Sélection d'une suggestion
+function selectSuggestion(code) {
+    document.getElementById("search").value = code;
+    document.getElementById("suggestions").style.display = "none";
+    searchSite();
+}
+
+// RECHERCHE (partielle + exacte, insensible à la casse)
+async function searchSite() {
+    const query = document.getElementById('search').value.trim().toUpperCase();
+    const data = await loadCSV();
+
+    document.getElementById("suggestions").style.display = "none";
+
+    // 1) Recherche exacte
+    const exact = data.find(item => item.searchText === query);
+
+    if (exact) {
+        openMaps(exact);
+        return;
+    }
+
+    // 2) Recherche partielle
+    const matches = data.filter(item => item.searchText.includes(query));
+
+    if (matches.length === 0) {
+        document.getElementById("result").innerHTML = "<p>Aucun site trouvé.</p>";
+        return;
+    }
+
+    // Si un seul résultat, on ouvre directement le choix Maps/Waze
+    if (matches.length === 1) {
+        openMaps(matches[0]);
+        return;
+    }
+
+    // Affichage liste des résultats
+    document.getElementById("result").innerHTML =
+        "<p>Résultats :</p>" +
+        matches.map((item, i) =>
+            `<div style="margin:8px 0;">
+                <a href="#" onclick="openMaps(cachedData[${cachedData.indexOf(item)}]); return false;">
+                    ${item.code}
+                </a>
+            </div>`
+        ).join("");
+}
+
+// Ouvre Maps/Waze
+function openMaps(item) {
+    const mapsUrl = `https://www.google.com/maps?q=${item.lat},${item.lng}`;
+    const wazeUrl = `https://waze.com/ul?ll=${item.lat},${item.lng}&navigate=yes`;
+
+    document.getElementById("result").innerHTML = `
+        <p>Choisir l'application :</p>
+        <a href="${mapsUrl}" target="_blank" style="background:#4285F4;color:white;">
+            Google Maps
+        </a>
+        <a href="${wazeUrl}" target="_blank" style="background:#1C9CEA;color:white;">
+            Waze
+        </a>
+    `;
+}
+</script>
+
+</body>
+</html>
