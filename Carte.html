@@ -59,7 +59,7 @@ async function loadCSV() {
                 code: parts[0],
                 lat: parseFloat(parts[1]),
                 lng: parseFloat(parts[2]),
-                operateur: parts[3] ? parts[3].toUpperCase() : ""   // ← colonne opérateur
+                operateur: parts[3] ? parts[3].toUpperCase() : ""
             };
         });
 }
@@ -102,9 +102,7 @@ function updateMarkers() {
 }
 </script>
 
-<!-- Clé API Google Maps -->
 <script src="https://maps.googleapis.com/maps/api/js?key=TA_CLE_API&callback=initMap" async defer></script>
 
 </body>
 </html>
-
