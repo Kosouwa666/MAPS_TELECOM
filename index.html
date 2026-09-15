@@ -73,7 +73,7 @@
     <button onclick="searchSite()">Chercher</button>
 </div>
 
-<!-- BOUTON CARTE TOUJOURS VISIBLE -->
+<!-- BOUTON CARTE FIXE (celui que tu veux garder) -->
 <a href="carte.html" target="_blank" class="carte-btn">Carte</a>
 
 <div id="result" style="margin-top:20px;"></div>
@@ -183,11 +183,10 @@ async function searchSite() {
         ).join("");
 }
 
-// Ouvre Google Maps / Waze (liens simples, pas d’API)
+// Ouvre Google Maps / Waze (SANS bouton Carte)
 function openMaps(item) {
     const mapsUrl = `https://www.google.com/maps?q=${item.lat},${item.lng}`;
     const wazeUrl = `https://waze.com/ul?ll=${item.lat},${item.lng}&navigate=yes`;
-    const carteUrl = "carte.html";
 
     document.getElementById("result").innerHTML = `
         <p>Choisir l'application :</p>
@@ -196,9 +195,6 @@ function openMaps(item) {
         </a>
         <a href="${wazeUrl}" target="_blank" style="background:#1C9CEA;color:white;">
             Waze
-        </a>
-        <a href="${carteUrl}" target="_blank" style="background:#4CAF50;color:white;">
-            Carte
         </a>
     `;
 }
