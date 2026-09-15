@@ -46,6 +46,18 @@
         align-items: flex-start;
         position: relative;
     }
+
+    .carte-btn {
+        display: inline-block;
+        margin-top: 20px;
+        padding: 12px 18px;
+        background: #4CAF50;
+        color: white;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 16px;
+    }
 </style>
 </head>
 <body>
@@ -60,6 +72,9 @@
 
     <button onclick="searchSite()">Chercher</button>
 </div>
+
+<!-- BOUTON CARTE TOUJOURS VISIBLE -->
+<a href="carte.html" target="_blank" class="carte-btn">Carte</a>
 
 <div id="result" style="margin-top:20px;"></div>
 
@@ -179,15 +194,3 @@ function openMaps(item) {
         <a href="${mapsUrl}" target="_blank" style="background:#4285F4;color:white;">
             Google Maps
         </a>
-        <a href="${wazeUrl}" target="_blank" style="background:#1C9CEA;color:white;">
-            Waze
-        </a>
-        <a href="${carteUrl}" target="_blank" style="background:#4CAF50;color:white;">
-            Carte
-        </a>
-    `;
-}
-</script>
-
-</body>
-</html>
