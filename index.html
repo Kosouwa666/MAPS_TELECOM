@@ -1,12 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <link rel="manifest" href="manifest.json">
-<script>
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js');
-}
-</script>
 <meta charset="UTF-8">
 <title>MAPS TELECOM</title>
 <style>
@@ -60,7 +54,7 @@ if ('serviceWorker' in navigator) {
 
 <div class="search-container">
     <div style="position:relative;">
-        <input type="text" id="search" placeholder="Code site ou Nom du site">
+        <input type="text" id="search" placeholder="Ex : 050BNO ou Nautile">
         <div id="suggestions"></div>
     </div>
 
@@ -80,8 +74,7 @@ document.getElementById("search").addEventListener("keydown", function(e) {
 
 let cachedData = null;
 
-// Lecture du CSV (robuste)
-// Format attendu : code;lat;lng  (le nom du site peut être inclus directement dans "code")
+// Lecture du CSV
 async function loadCSV() {
     if (cachedData) return cachedData;
 
@@ -95,22 +88,19 @@ async function loadCSV() {
         .slice(1)
         .map(row => {
             const parts = row.split(';').map(x => x.trim());
-            const code = parts[0] || '';
-            const lat = parts[1] || '';
-            const lng = parts[2] || '';
             return {
-                code,
-                lat,
-                lng,
-                // Version en majuscules du code, utilisée pour une recherche insensible à la casse
-                searchText: code.toUpperCase()
+                code: parts[0],
+                lat: parts[1],
+                lng: parts[2],
+                operateur: parts[3] ? parts[3].toUpperCase() : "",
+                searchText: parts[0].toUpperCase()
             };
         });
 
     return cachedData;
 }
 
-// AUTO-COMPLÉTION (recherche partielle, insensible à la casse)
+// AUTO-COMPLÉTION
 document.getElementById("search").addEventListener("input", async function() {
     const query = this.value.trim().toUpperCase();
     const suggestionsBox = document.getElementById("suggestions");
@@ -135,21 +125,19 @@ document.getElementById("search").addEventListener("input", async function() {
     suggestionsBox.style.display = "block";
 });
 
-// Sélection d'une suggestion
 function selectSuggestion(code) {
     document.getElementById("search").value = code;
     document.getElementById("suggestions").style.display = "none";
     searchSite();
 }
 
-// RECHERCHE (partielle + exacte, insensible à la casse)
+// RECHERCHE
 async function searchSite() {
     const query = document.getElementById('search').value.trim().toUpperCase();
     const data = await loadCSV();
 
     document.getElementById("suggestions").style.display = "none";
 
-    // 1) Recherche exacte
     const exact = data.find(item => item.searchText === query);
 
     if (exact) {
@@ -157,7 +145,6 @@ async function searchSite() {
         return;
     }
 
-    // 2) Recherche partielle
     const matches = data.filter(item => item.searchText.includes(query));
 
     if (matches.length === 0) {
@@ -165,16 +152,14 @@ async function searchSite() {
         return;
     }
 
-    // Si un seul résultat, on ouvre directement le choix Maps/Waze
     if (matches.length === 1) {
         openMaps(matches[0]);
         return;
     }
 
-    // Affichage liste des résultats
     document.getElementById("result").innerHTML =
         "<p>Résultats :</p>" +
-        matches.map((item, i) =>
+        matches.map(item =>
             `<div style="margin:8px 0;">
                 <a href="#" onclick="openMaps(cachedData[${cachedData.indexOf(item)}]); return false;">
                     ${item.code}
@@ -183,10 +168,11 @@ async function searchSite() {
         ).join("");
 }
 
-// Ouvre Maps/Waze
+// Ouvre Maps/Waze + bouton Carte
 function openMaps(item) {
     const mapsUrl = `https://www.google.com/maps?q=${item.lat},${item.lng}`;
     const wazeUrl = `https://waze.com/ul?ll=${item.lat},${item.lng}&navigate=yes`;
+    const carteUrl = "carte.html";
 
     document.getElementById("result").innerHTML = `
         <p>Choisir l'application :</p>
@@ -195,6 +181,9 @@ function openMaps(item) {
         </a>
         <a href="${wazeUrl}" target="_blank" style="background:#1C9CEA;color:white;">
             Waze
+        </a>
+        <a href="${carteUrl}" target="_blank" style="background:#4CAF50;color:white;">
+            Carte
         </a>
     `;
 }
