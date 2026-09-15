@@ -5,59 +5,14 @@
 <title>MAPS TELECOM</title>
 <style>
     body { font-family: Arial; padding: 20px; }
-
     input { width: 300px; padding: 10px; font-size: 16px; }
     button { padding: 10px 20px; font-size: 16px; margin-left: 10px; }
-
-    #result a { 
-        display: inline-block; 
-        margin-right: 20px; 
-        margin-top: 10px; 
-        padding: 12px 18px; 
-        background: #eee; 
-        border-radius: 6px; 
-        text-decoration: none; 
-        color: #000;
-        font-weight: bold;
-        font-size: 16px;
-    }
-
-    #suggestions {
-        border: 1px solid #ccc;
-        width: 300px;
-        display: none;
-        position: absolute;
-        background: white;
-        z-index: 10;
-        font-size: 16px;
-        max-height: 250px;
-        overflow-y: auto;
-    }
-    #suggestions div {
-        padding: 8px;
-        cursor: pointer;
-    }
-    #suggestions div:hover {
-        background: #f0f0f0;
-    }
-
-    .search-container {
-        display: flex;
-        align-items: flex-start;
-        position: relative;
-    }
-
-    .carte-btn {
-        display: inline-block;
-        margin-top: 20px;
-        padding: 12px 18px;
-        background: #4CAF50;
-        color: white;
-        border-radius: 6px;
-        text-decoration: none;
-        font-weight: bold;
-        font-size: 16px;
-    }
+    #result a { display:inline-block; margin-right:20px; margin-top:10px; padding:12px 18px; background:#eee; border-radius:6px; text-decoration:none; color:#000; font-weight:bold; font-size:16px; }
+    #suggestions { border:1px solid #ccc; width:300px; display:none; position:absolute; background:white; z-index:10; font-size:16px; max-height:250px; overflow-y:auto; }
+    #suggestions div { padding:8px; cursor:pointer; }
+    #suggestions div:hover { background:#f0f0f0; }
+    .search-container { display:flex; align-items:flex-start; position:relative; }
+    .carte-btn { display:inline-block; margin-top:20px; padding:12px 18px; background:#4CAF50; color:white; border-radius:6px; text-decoration:none; font-weight:bold; font-size:16px; }
 </style>
 </head>
 <body>
@@ -69,74 +24,51 @@
         <input type="text" id="search" placeholder="Ex : 050BNO ou Nautile">
         <div id="suggestions"></div>
     </div>
-
     <button onclick="searchSite()">Chercher</button>
 </div>
 
-<!-- BOUTON CARTE FIXE (celui que tu veux garder) -->
 <a href="carte.html" target="_blank" class="carte-btn">Carte</a>
 
 <div id="result" style="margin-top:20px;"></div>
 
 <script>
-// Empêche Enter de lancer Maps
 document.getElementById("search").addEventListener("keydown", function(e) {
-    if (e.key === "Enter") {
-        e.preventDefault();
-        searchSite();
-    }
+    if (e.key === "Enter") { e.preventDefault(); searchSite(); }
 });
 
 let cachedData = null;
 
-// Lecture du CSV
 async function loadCSV() {
     if (cachedData) return cachedData;
-
     const response = await fetch('sites.csv');
     const text = await response.text();
 
-    cachedData = text
-        .split('\n')
-        .map(r => r.trim())
-        .filter(r => r.length > 0)
-        .slice(1)
-        .map(row => {
-            const parts = row.split(';').map(x => x.trim());
-            return {
-                code: parts[0],
-                lat: parts[1],
-                lng: parts[2],
-                operateur: parts[3] ? parts[3].toUpperCase() : "",
-                searchText: parts[0].toUpperCase()
-            };
-        });
+    cachedData = text.split('\n').map(r => r.trim()).filter(r => r.length > 0).slice(1).map(row => {
+        const parts = row.split(';').map(x => x.trim());
+        return {
+            code: parts[0],
+            lat: parts[1],
+            lng: parts[2],
+            operateur: parts[3].toUpperCase(),
+            searchText: parts[0].toUpperCase()
+        };
+    });
 
     return cachedData;
 }
 
-// AUTO-COMPLÉTION
 document.getElementById("search").addEventListener("input", async function() {
     const query = this.value.trim().toUpperCase();
     const suggestionsBox = document.getElementById("suggestions");
 
-    if (query.length < 2) {
-        suggestionsBox.style.display = "none";
-        return;
-    }
+    if (query.length < 2) { suggestionsBox.style.display = "none"; return; }
 
     const data = await loadCSV();
     const matches = data.filter(item => item.searchText.includes(query));
 
-    if (matches.length === 0) {
-        suggestionsBox.style.display = "none";
-        return;
-    }
+    if (matches.length === 0) { suggestionsBox.style.display = "none"; return; }
 
-    suggestionsBox.innerHTML = matches
-        .map(item => `<div onclick="selectSuggestion('${item.code}')">${item.code}</div>`)
-        .join("");
-
+    suggestionsBox.innerHTML = matches.map(item => `<div onclick="selectSuggestion('${item.code}')">${item.code}</div>`).join("");
     suggestionsBox.style.display = "block";
 });
 
@@ -146,7 +78,6 @@ function selectSuggestion(code) {
     searchSite();
 }
 
-// RECHERCHE
 async function searchSite() {
     const query = document.getElementById('search').value.trim().toUpperCase();
     const data = await loadCSV();
@@ -154,48 +85,25 @@ async function searchSite() {
     document.getElementById("suggestions").style.display = "none";
 
     const exact = data.find(item => item.searchText === query);
-
-    if (exact) {
-        openMaps(exact);
-        return;
-    }
+    if (exact) { openMaps(exact); return; }
 
     const matches = data.filter(item => item.searchText.includes(query));
-
-    if (matches.length === 0) {
-        document.getElementById("result").innerHTML = "<p>Aucun site trouvé.</p>";
-        return;
-    }
-
-    if (matches.length === 1) {
-        openMaps(matches[0]);
-        return;
-    }
+    if (matches.length === 0) { document.getElementById("result").innerHTML = "<p>Aucun site trouvé.</p>"; return; }
+    if (matches.length === 1) { openMaps(matches[0]); return; }
 
     document.getElementById("result").innerHTML =
         "<p>Résultats :</p>" +
-        matches.map(item =>
-            `<div style="margin:8px 0;">
-                <a href="#" onclick="openMaps(cachedData[${cachedData.indexOf(item)}]); return false;">
-                    ${item.code}
-                </a>
-            </div>`
-        ).join("");
+        matches.map(item => `<div style="margin:8px 0;"><a href="#" onclick="openMaps(cachedData[${cachedData.indexOf(item)}]); return false;">${item.code}</a></div>`).join("");
 }
 
-// Ouvre Google Maps / Waze (SANS bouton Carte)
 function openMaps(item) {
     const mapsUrl = `https://www.google.com/maps?q=${item.lat},${item.lng}`;
     const wazeUrl = `https://waze.com/ul?ll=${item.lat},${item.lng}&navigate=yes`;
 
     document.getElementById("result").innerHTML = `
         <p>Choisir l'application :</p>
-        <a href="${mapsUrl}" target="_blank" style="background:#4285F4;color:white;">
-            Google Maps
-        </a>
-        <a href="${wazeUrl}" target="_blank" style="background:#1C9CEA;color:white;">
-            Waze
-        </a>
+        <a href="${mapsUrl}" target="_blank" style="background:#4285F4;color:white;">Google Maps</a>
+        <a href="${wazeUrl}" target="_blank" style="background:#1C9CEA;color:white;">Waze</a>
     `;
 }
 </script>
