@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Carte Telecom</title>
+<title>MAPS TELECOM - Carte Telecom</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <style>
     body, html {
@@ -41,9 +41,8 @@
     <h3>Opérateurs</h3>
 
     <label><input type="checkbox" id="sfr" onchange="updateMarkers()"> SFR</label><br>
-    <label><input type="checkbox" id="orange" onchange="updateMarkers()"> ORANGE</label><br>
 
-    <!-- Sous-filtres ORANGE -->
+    <label><input type="checkbox" id="orange" onchange="updateMarkers()"> ORANGE</label><br>
     <div class="subfilters">
         <label><input type="checkbox" id="orange_bno" onchange="updateMarkers()"> BNO</label><br>
         <label><input type="checkbox" id="orange_dni" onchange="updateMarkers()"> DNI</label><br>
@@ -56,7 +55,6 @@
     <label><input type="checkbox" id="zeop" onchange="updateMarkers()"> ZEOP</label><br>
     <label><input type="checkbox" id="tdf" onchange="updateMarkers()"> TDF</label><br>
     <label><input type="checkbox" id="freedom" onchange="updateMarkers()"> FREEDOM</label><br>
-
 </div>
 
 <div id="map"></div>
@@ -81,8 +79,8 @@ async function loadCSV() {
                 code: parts[0],
                 lat: parseFloat(parts[1]),
                 lng: parseFloat(parts[2]),
-                operateur: parts[3] ? parts[3].toUpperCase() : "",
-                zone: parts[4] ? parts[4].toUpperCase() : ""
+                operateur: parts[3].toUpperCase(),
+                zone: parts[4].toUpperCase()
             };
         });
 }
@@ -98,10 +96,7 @@ async function initMap() {
     const data = await loadCSV();
 
     markers = data.map(item => {
-        const marker = L.marker([item.lat, item.lng], {
-            title: item.code
-        });
-
+        const marker = L.marker([item.lat, item.lng], { title: item.code });
         marker.bindPopup(`<b>${item.code}</b><br>${item.operateur}<br>${item.zone}`);
 
         return {
@@ -115,19 +110,18 @@ async function initMap() {
 }
 
 function updateMarkers() {
-    const showSFR = document.getElementById("sfr").checked;
-    const showORANGE = document.getElementById("orange").checked;
-    const showFREE = document.getElementById("free").checked;
-    const showZEOP = document.getElementById("zeop").checked;
-    const showTDF = document.getElementById("tdf").checked;
-    const showFREEDOM = document.getElementById("freedom").checked;
+    const showSFR = sfr.checked;
+    const showORANGE = orange.checked;
+    const showFREE = free.checked;
+    const showZEOP = zeop.checked;
+    const showTDF = tdf.checked;
+    const showFREEDOM = freedom.checked;
 
-    // Sous-filtres ORANGE
-    const o_bno = document.getElementById("orange_bno").checked;
-    const o_dni = document.getElementById("orange_dni").checked;
-    const o_pau = document.getElementById("orange_pau").checked;
-    const o_pir = document.getElementById("orange_pir").checked;
-    const o_may = document.getElementById("orange_may").checked;
+    const o_bno = orange_bno.checked;
+    const o_dni = orange_dni.checked;
+    const o_pau = orange_pau.checked;
+    const o_pir = orange_pir.checked;
+    const o_may = orange_may.checked;
 
     markers.forEach(obj => {
         let visible = false;
