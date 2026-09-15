@@ -75,14 +75,26 @@ async function loadCSV() {
         .slice(1)
         .map(row => {
             const parts = row.split(';').map(x => x.trim());
+
+            // Ignore lignes invalides
+            if (parts.length < 4) return null;
+
+            let operateur = parts[3].toUpperCase().trim();
+
+            // Nettoyage opérateurs avec espaces
+            operateur = operateur.replace(/\s+/g, "");
+
+            let zone = parts[4] ? parts[4].toUpperCase().trim() : "";
+
             return {
                 code: parts[0],
                 lat: parseFloat(parts[1]),
                 lng: parseFloat(parts[2]),
-                operateur: parts[3].toUpperCase(),
-                zone: parts[4].toUpperCase()
+                operateur: operateur,
+                zone: zone
             };
-        });
+        })
+        .filter(x => x !== null);
 }
 
 async function initMap() {
@@ -126,6 +138,7 @@ function updateMarkers() {
     markers.forEach(obj => {
         let visible = false;
 
+        // ORANGE + zones
         if (obj.operateur === "ORANGE") {
             if (showORANGE) {
                 visible =
@@ -135,7 +148,10 @@ function updateMarkers() {
                     (o_pir && obj.zone === "PIR") ||
                     (o_may && obj.zone === "MAY");
             }
-        } else {
+        }
+
+        // Autres opérateurs (sans zones)
+        else {
             visible =
                 (showSFR && obj.operateur === "SFR") ||
                 (showFREE && obj.operateur === "FREE") ||
