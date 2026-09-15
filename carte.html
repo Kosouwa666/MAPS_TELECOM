@@ -34,9 +34,14 @@
 
 <div id="panel">
     <h3>Opérateurs</h3>
+
     <label><input type="checkbox" id="sfr" onchange="updateMarkers()"> SFR</label><br>
     <label><input type="checkbox" id="orange" onchange="updateMarkers()"> ORANGE</label><br>
     <label><input type="checkbox" id="free" onchange="updateMarkers()"> FREE</label><br>
+    <label><input type="checkbox" id="zeop" onchange="updateMarkers()"> ZEOP</label><br>
+    <label><input type="checkbox" id="tdf" onchange="updateMarkers()"> TDF</label><br>
+    <label><input type="checkbox" id="freedom" onchange="updateMarkers()"> FREEDOM</label><br>
+
 </div>
 
 <div id="map"></div>
@@ -67,10 +72,8 @@ async function loadCSV() {
 }
 
 async function initMap() {
-    // Centre approximatif La Réunion
     map = L.map('map').setView([-20.9, 55.5], 11);
 
-    // Fond de carte OpenStreetMap (gratuit)
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '&copy; OpenStreetMap'
@@ -91,7 +94,6 @@ async function initMap() {
         };
     });
 
-    // Au départ, aucun opérateur coché → rien affiché
     updateMarkers();
 }
 
@@ -99,6 +101,9 @@ function updateMarkers() {
     const showSFR = document.getElementById("sfr").checked;
     const showORANGE = document.getElementById("orange").checked;
     const showFREE = document.getElementById("free").checked;
+    const showZEOP = document.getElementById("zeop").checked;
+    const showTDF = document.getElementById("tdf").checked;
+    const showFREEDOM = document.getElementById("freedom").checked;
 
     markers.forEach(obj => {
         const op = obj.operateur;
@@ -106,7 +111,10 @@ function updateMarkers() {
         const visible =
             (showSFR && op === "SFR") ||
             (showORANGE && op === "ORANGE") ||
-            (showFREE && op === "FREE");
+            (showFREE && op === "FREE") ||
+            (showZEOP && op === "ZEOP") ||
+            (showTDF && op === "TDF") ||
+            (showFREEDOM && op === "FREEDOM");
 
         if (visible) {
             if (!map.hasLayer(obj.marker)) {
@@ -120,7 +128,6 @@ function updateMarkers() {
     });
 }
 
-// Initialisation
 initMap();
 </script>
 
